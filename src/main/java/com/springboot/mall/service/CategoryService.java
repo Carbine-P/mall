@@ -14,6 +14,7 @@ public class CategoryService {
     @Autowired//自动装配;成员属性字段使用 @Autowired，无需字段的 set 方法
     CategoryDAO categoryDAO;
 
+    //首先创建一个通过 id 倒排序的Sort 对象，然后通过 categoryDAO进行查询。
     public List<Category> list() {
         Sort sort = new Sort(Sort.Direction.DESC, "id");
         return categoryDAO.findAll(sort);

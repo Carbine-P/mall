@@ -6,7 +6,7 @@
 	    </li>
 	    <li :class="{ disabled: !pagination.hasPrevious }">
 	      <a  href="#nowhere" @click="jump('pre')">‹</a>
-	    </li>		    
+	    </li>
 
 		<li  v-for="i in pagination.navigatepageNums">
 			<a href="#nowhere" @click="jumpByNumber(i-1)" >
@@ -19,7 +19,7 @@
 	    </li>
 	    <li :class="{ disabled: pagination.last }">
 	      <a  href="#nowhere" @click="jump('last')">»</a>
-	    </li>		    
+	    </li>
 	  </ul>
-	</nav>    
+	</nav>
 </div>

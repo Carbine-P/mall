@@ -3,6 +3,7 @@ package com.springboot.mall.service;
 
 import com.springboot.mall.DAO.CategoryDAO;
 import com.springboot.mall.pojo.Category;
+import com.springboot.mall.pojo.Product;
 import com.springboot.mall.util.Page4Navigator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -44,8 +45,34 @@ public class CategoryService {
         Category c= categoryDAO.findOne(id);
         return c;
     }
+
     public void update(Category bean) {
         categoryDAO.save(bean);
+    }
+
+    //在对分类做序列还转换为 json 的时候，会遍历里面的 products, 然后遍历出来的产品上，又会有分类;防止死循环
+    public void removeCategoryFromProduct(List<Category> cs) {
+        for (Category category : cs) {
+            removeCategoryFromProduct(category);
+        }
+    }
+
+    public void removeCategoryFromProduct(Category category) {
+        List<Product> products =category.getProducts();
+        if(null!=products) {
+            for (Product product : products) {
+                product.setCategory(null);
+            }
+        }
+
+        List<List<Product>> productsByRow =category.getProductsByRow();
+        if(null!=productsByRow) {
+            for (List<Product> ps : productsByRow) {
+                for (Product p: ps) {
+                    p.setCategory(null);
+                }
+            }
+        }
     }
 
 }

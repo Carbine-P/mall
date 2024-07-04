@@ -1,12 +1,13 @@
 package com.springboot.mall.service;
- 
+
 
 import com.springboot.mall.DAO.ProductImageDAO;
+import com.springboot.mall.pojo.OrderItem;
 import com.springboot.mall.pojo.Product;
 import com.springboot.mall.pojo.ProductImage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
- 
+
 import java.util.List;
  
 @Service
@@ -50,6 +51,12 @@ public class ProductImageService   {
     public void setFirstProdutImages(List<Product> products) {
         for (Product product : products)
             setFirstProdutImage(product);
+    }
+
+    public void setFirstProdutImagesOnOrderItems(List<OrderItem> ois) {
+        for (OrderItem orderItem : ois) {
+            setFirstProdutImage(orderItem.getProduct());
+        }
     }
  
 }

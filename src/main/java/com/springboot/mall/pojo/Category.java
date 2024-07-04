@@ -4,6 +4,7 @@ package com.springboot.mall.pojo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity//表示这是一个实体类
 @Table(name = "category")//表示对应的表名是 category
@@ -26,6 +27,12 @@ public class Category {
     @Column(name = "id")//用来标识实体类中属性与数据表中字段的对应关系;最好标注在定义的属性前
     int id;
     String name;
+    @Transient
+    //想要添加表中不存在的字段，就要使用@Transient这个注解了
+    // 使用 @Transient 表示该属性并非是一个要映射到数据库表中的字段,只是起辅助作用.ORM框架将会忽略该属性
+    List<Product> products;
+    @Transient
+    List<List<Product>> productsByRow;
 
     public int getId() {
         return id;
@@ -41,5 +48,23 @@ public class Category {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+
+    public List<Product> getProducts() {
+        return products;
+    }
+    public void setProducts(List<Product> products) {
+        this.products = products;
+    }
+    public List<List<Product>> getProductsByRow() {
+        return productsByRow;
+    }
+    public void setProductsByRow(List<List<Product>> productsByRow) {
+        this.productsByRow = productsByRow;
+    }
+    @Override
+    public String toString() {
+        return "Category [id=" + id + ", name=" + name + "]";
     }
 }

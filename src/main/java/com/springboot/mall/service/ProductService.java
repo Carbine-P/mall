@@ -1,14 +1,20 @@
 package com.springboot.mall.service;
 
 import com.springboot.mall.DAO.ProductDAO;
+import com.springboot.mall.es.ProductESDAO;
 import com.springboot.mall.pojo.Category;
 import com.springboot.mall.pojo.Product;
 import com.springboot.mall.util.Page4Navigator;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.FunctionScoreQueryBuilder;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.SearchQuery;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,22 +33,25 @@ public class ProductService  {
     OrderItemService orderItemService;
     @Autowired
     ReviewService reviewService;
- 
+
+    ProductESDAO productESDAO;
+
     public void add(Product bean) {
         productDAO.save(bean);
+        productESDAO.save(bean);
     }
- 
     public void delete(int id) {
         productDAO.delete(id);
+        productESDAO.delete(id);
     }
- 
+    public void update(Product bean) {
+        productDAO.save(bean);
+        productESDAO.save(bean);
+    }
     public Product get(int id) {
         return productDAO.findOne(id);
     }
- 
-    public void update(Product bean) {
-        productDAO.save(bean);
-    }
+
  
     public Page4Navigator<Product> list(int cid, int start, int size, int navigatePages) {
         Category category = categoryService.get(cid);
@@ -99,9 +108,30 @@ public class ProductService  {
     }
 
     public List<Product> search(String keyword, int start, int size) {
-        Sort sort = new Sort(Sort.Direction.DESC, "id");
-        Pageable pageable = new PageRequest(start, size, sort);
-        List<Product> products =productDAO.findByNameLike("%"+keyword+"%",pageable);
-        return products;
+        initDatabase2ES();
+        FunctionScoreQueryBuilder functionScoreQueryBuilder = QueryBuilders.functionScoreQuery()
+                .add(QueryBuilders.matchPhraseQuery("name", keyword),
+                        ScoreFunctionBuilders.weightFactorFunction(100))
+                .scoreMode("sum")
+                .setMinScore(10);
+        Sort sort  = new Sort(Sort.Direction.DESC,"id");
+        Pageable pageable = new PageRequest(start, size,sort);
+        SearchQuery searchQuery = new NativeSearchQueryBuilder()
+                .withPageable(pageable)
+                .withQuery(functionScoreQueryBuilder).build();
+        Page<Product> page = productESDAO.search(searchQuery);
+        return page.getContent();
+    }
+
+    //初始化数据到es
+    private void initDatabase2ES() {
+        Pageable pageable = new PageRequest(0, 5);
+        Page<Product> page =productESDAO.findAll(pageable);
+        if(page.getContent().isEmpty()) {
+            List<Product> products= productDAO.findAll();
+            for (Product product : products) {
+                productESDAO.save(product);
+            }
+        }
     }
 }
